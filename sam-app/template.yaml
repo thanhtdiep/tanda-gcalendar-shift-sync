@@ -19,7 +19,7 @@ Resources:
       Runtime: nodejs18.x
       Environment:
         Variables:
-          EMAIL: test@gmail.com
+          EMAIL: johndoe@mail.com
           PASSWORD: password
       Architectures:
         - x86_64
