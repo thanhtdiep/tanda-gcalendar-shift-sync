@@ -19,6 +19,17 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
         const email = process.env.EMAIL;
         const psd = process.env.PASSWORD;
 
+        // IF !tanda_access_token exists 1 
+        // 1. Auth to Tanda
+        // IF !gcalendar_access_token exists 2
+        // 2. Auth to Google
+
+        // GET shifts from today -> next SUN
+        // Loop through results -> create events accordingly
+        // POST with await for each requests
+        // POST with batch if possible.
+
+
         if (!email || !psd)
             return {
                 statusCode: 400,
