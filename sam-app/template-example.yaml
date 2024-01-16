@@ -21,6 +21,8 @@ Resources:
         Variables:
           EMAIL: YOUR_TANDA_EMAIL
           PASSWORD: YOUR_TANDA_PASSWORD
+          TANDA_BASE_URL: https://my.tanda.co/api
+          GCALENDAR_BASE_URL: YOUR_TANDA_PASSWORD
       Architectures:
         - x86_64
       Events:

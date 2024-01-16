@@ -10,34 +10,45 @@ import axios from 'axios';
  *
  */
 
-const NO_CREDS = {
-    
-}
+const NO_CREDS = {};
 
 export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     try {
         const email = process.env.EMAIL;
         const psd = process.env.PASSWORD;
+        const authenticateUrl = `${process.env.TANDA_BASE_URL}/oauth/token`;
 
-        // IF !tanda_access_token exists 1 
-        // 1. Auth to Tanda
-        // IF !gcalendar_access_token exists 2
-        // 2. Auth to Google
-
-        // GET shifts from today -> next SUN
-        // Loop through results -> create events accordingly
-        // POST with await for each requests
-        // POST with batch if possible.
-
-
-        if (!email || !psd)
+        if (!email || !psd) {
             return {
                 statusCode: 400,
                 body: JSON.stringify({
-                    message: 'Failed to schedule up your next shifts.',
+                    message: 'Missing Tanda credentials.',
                 }),
             };
+        }
 
+        // 1. Auth to Tanda
+        const tandaAccessToken = await axios({
+            method: 'post',
+            url: authenticateUrl,
+            headers: {
+                'Cache-Control': 'no-cache',
+            },
+            data: {
+                username: email,
+                password: psd,
+                scope: 'me',
+                grant_type: 'password',
+            },
+        });
+
+        // GET shifts from today -> next SUN
+
+        console.log(tandaAccessToken.statusText); // OK, error
+
+        // Loop through results -> create events accordingly
+        // POST with await for each requests
+        // POST with batch if possible.
 
         return {
             statusCode: 200,
@@ -50,7 +61,7 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
         return {
             statusCode: 500,
             body: JSON.stringify({
-                message: 'Failed to schedule up your next shifts.',
+                message: 'Failed to schedule up your next shifts.' + err,
             }),
         };
     }
