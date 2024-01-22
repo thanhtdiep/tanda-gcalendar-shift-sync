@@ -11,10 +11,10 @@ Globals:
     Timeout: 10
 
 Resources:
-  HelloWorldFunction:
+  ShiftSyncFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
-      CodeUri: hello-world/
+      CodeUri: shift-sync/
       Handler: app.lambdaHandler
       Runtime: nodejs18.x
       Environment:

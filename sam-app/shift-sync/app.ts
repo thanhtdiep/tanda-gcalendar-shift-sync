@@ -1,6 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import axios from 'axios';
-import jwt from 'jsonwebtoken';
 import { google } from 'googleapis';
 
 // import serviceAccount from './tgsspk.json';
@@ -95,6 +94,7 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
         });
 
         if (authRes.statusText == 'error') throw 'Auth failed.';
+        console.log('Authenticated to Tanda API.');
 
         // GET shifts from today -> next SUN
         const date = new Date();
@@ -115,33 +115,44 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
                 Authorization: authHeader,
             },
         });
+        if (shiftsRes.data.length == 0)
+            return {
+                statusCode: 200,
+                body: JSON.stringify({
+                    message: 'No shifts were assigned. Check on Tanda App',
+                }),
+            };
+
+        console.log('Retrieved shifts from Tanda.');
         const shifts: TandaShift[] = shiftsRes.data;
 
         // Loop through results -> create events accordingly
         let events: Event[] = [];
-        await shifts.forEach((shift: TandaShift) => {
-            const startTime = secondsToISOString(shift.start);
-            const endTime = secondsToISOString(shift.finish);
-            events.push({
-                summary: 'WORK - Quest Hotel Eight Mile Plain',
-                location: 'Quest Hotel Eight Mile Plain',
-                start: {
-                    dateTime: startTime,
-                    timeZone: 'Australia/Brisbane',
-                },
-                end: {
-                    dateTime: endTime,
-                    timeZone: 'Australia/Brisbane',
-                },
-                reminders: {
-                    useDefault: false,
-                    overrides: [
-                        { method: 'popup', minutes: 12 * 60 },
-                        { method: 'popup', minutes: 3 * 60 },
-                    ],
-                },
-            });
-        });
+        await Promise.all(
+            shifts.map((shift: TandaShift) => {
+                const startTime = secondsToISOString(shift.start);
+                const endTime = secondsToISOString(shift.finish);
+                events.push({
+                    summary: 'WORK - Quest Hotel Eight Mile Plain',
+                    location: 'Quest Hotel Eight Mile Plain',
+                    start: {
+                        dateTime: startTime,
+                        timeZone: 'Australia/Brisbane',
+                    },
+                    end: {
+                        dateTime: endTime,
+                        timeZone: 'Australia/Brisbane',
+                    },
+                    reminders: {
+                        useDefault: false,
+                        overrides: [
+                            { method: 'popup', minutes: 12 * 60 },
+                            { method: 'popup', minutes: 3 * 60 },
+                        ],
+                    },
+                });
+            }),
+        );
 
         // GCalendar API Auth
         if (!process.env.GAPI_SERVICE_PRIVATE_KEY || !process.env.GAPI_SERVICE_EMAIL) {
@@ -163,22 +174,25 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
         console.log('Authenticated to Google API success.');
 
         // Create each event with delay
-        events.forEach(async (e: Event) => {
-            const eventRes = await calendar.events.insert({
-                auth: auth,
-                calendarId: process.env.CALENDAR_ID,
-                requestBody: e,
-            });
-            console.log(`Event create on ${eventRes.data.created}. Link to calendar: ${eventRes.data.htmlLink}`);
-            // await delay(1000)
-        });
+        await Promise.all(
+            events.map(async (e: Event) => {
+                const eventRes = await calendar.events.insert({
+                    auth: auth,
+                    calendarId: process.env.CALENDAR_ID,
+                    requestBody: e,
+                });
+                console.log(`Event create on ${eventRes.data.created}. Link to calendar: ${eventRes.data.htmlLink}`);
+                // await delay(1000)
+            }),
+        );
 
         console.log('Created Google Calendar events success.');
+
         return {
             statusCode: 200,
             body: JSON.stringify({
                 message:
-                    'Sync Tanda shifts to Google Calendar from to completed!\nPlease check your calendar for new shifts.',
+                    'Sync Tanda shifts to Google Calendar from to completed! Please check your calendar for new shifts.',
             }),
         };
     } catch (err) {
