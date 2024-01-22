@@ -8,7 +8,7 @@ Description: >
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
-    Timeout: 3
+    Timeout: 10
 
 Resources:
   HelloWorldFunction:
@@ -19,17 +19,22 @@ Resources:
       Runtime: nodejs18.x
       Environment:
         Variables:
-          EMAIL: YOUR_TANDA_EMAIL
-          PASSWORD: YOUR_TANDA_PASSWORD
+          CALENDAR_ID: YOUR_CALENDAR_ID
+          TANDA_EMAIL: YOUR_TANDA_EMAIL
+          TANDA_PASSWORD: YOUR_TANDA_PASSWORD
+          GCALENDAR_API_VER: /v3/calendars/primary/events
+          GAPI_SERVICE_EMAIL: YOUR_GAPI_SERVICE_EMAIL
+          GAPI_SERVICE_PRIVATE_KEY: YOUR_GAPI_SERVICE_PRIVATE_KEY
           TANDA_BASE_URL: https://my.tanda.co/api
-          GCALENDAR_BASE_URL: YOUR_TANDA_PASSWORD
+          GCALENDAR_BASE_URL: https://www.googleapis.com/calendar
+          GAPI_AUTH_BASE_URL: https://oauth2.googleapis.com/token
       Architectures:
         - x86_64
       Events:
-        HelloWorld:
+        ShiftSync:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /hello
+            Path: /execute
             Method: get
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
@@ -44,12 +49,12 @@ Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  HelloWorldApi:
-    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  HelloWorldFunction:
-    Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt HelloWorldFunction.Arn
-  HelloWorldFunctionIamRole:
-    Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt HelloWorldFunctionRole.Arn
+  ShiftSyncApi:
+    Description: "API Gateway endpoint URL for Prod stage for Shift Sync function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/execute/"
+  ShiftSyncFunction:
+    Description: "Shift Sync Function ARN"
+    Value: !GetAtt ShiftSyncFunction.Arn
+  ShiftSyncFunctionIamRole:
+    Description: "Implicit IAM Role created for Shift Sync function"
+    Value: !GetAtt ShiftSyncFunctionRole.Arn
