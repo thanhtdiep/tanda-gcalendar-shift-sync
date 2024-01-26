@@ -133,21 +133,21 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
                 const startTime = secondsToISOString(shift.start);
                 const endTime = secondsToISOString(shift.finish);
                 events.push({
-                    summary: 'WORK - Quest Hotel Eight Mile Plain',
-                    location: 'Quest Hotel Eight Mile Plain',
-                    start: {
-                        dateTime: startTime,
-                        timeZone: 'Australia/Brisbane',
+                    'summary': 'WORK - Quest Hotel Eight Mile Plain',
+                    'location': 'Quest Hotel Eight Mile Plain',
+                    'start': {
+                        'dateTime': startTime,
+                        'timeZone': 'Australia/Brisbane',
                     },
-                    end: {
-                        dateTime: endTime,
-                        timeZone: 'Australia/Brisbane',
+                    'end': {
+                        'dateTime': endTime,
+                        'timeZone': 'Australia/Brisbane',
                     },
-                    reminders: {
-                        useDefault: false,
-                        overrides: [
-                            { method: 'popup', minutes: 12 * 60 },
-                            { method: 'popup', minutes: 3 * 60 },
+                    'reminders': {
+                        'useDefault': false,
+                        'overrides': [
+                            { 'method': 'popup', 'minutes': 12 * 60 },
+                            { 'method': 'popup', 'minutes': 3 * 60 },
                         ],
                     },
                 });
