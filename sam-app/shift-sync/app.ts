@@ -49,10 +49,6 @@ interface Event {
         dateTime: string;
         timeZone: string;
     };
-    reminders: {
-        useDefault: boolean;
-        overrides: [{ method: string; minutes: number }, { method: string; minutes: number }];
-    };
 }
 
 const TIMEFRAME = 6;
@@ -144,13 +140,6 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
                     end: {
                         dateTime: endTime,
                         timeZone: 'Australia/Brisbane',
-                    },
-                    reminders: {
-                        useDefault: false,
-                        overrides: [
-                            { method: 'popup', minutes: 12 * 60 },
-                            { method: 'popup', minutes: 3 * 60 },
-                        ],
                     },
                 });
             }),
