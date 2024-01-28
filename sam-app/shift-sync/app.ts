@@ -64,6 +64,15 @@ const secondsToISOString = (seconds: number): string => {
     return new Date(seconds * 1000).toISOString();
 };
 
+const getDateWithTimeframe = (timeframe: number) => {
+    var date = new Date();
+    date.setDate(date.getDate() + timeframe);
+    var dd = String(date.getDate()).padStart(2, '0');
+    var mm = String(date.getMonth() + 1).padStart(2, '0'); //January is 0!
+    var yyyy = date.getFullYear();
+    return `${yyyy}-${mm}-${dd}`;
+};
+
 export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     try {
         const authUrl = `${process.env.TANDA_BASE_URL}/oauth/token`;
@@ -97,17 +106,10 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
         console.log('Authenticated to Tanda API.');
 
         // GET shifts from today -> next SUN
-        const date = new Date();
-        const year = date.getFullYear();
-        const month = (1 + date.getMonth()).toString().padStart(2, '0');
-        const fromDay = date.getDate().toString().padStart(2, '0');
-        const toDay = (date.getDate() + TIMEFRAME).toString().padStart(2, '0');
-
-        const fromDate = `${year}-${month}-${fromDay}`;
-        const toDate = `${year}-${month}-${toDay}`;
+        const fromDate = getDateWithTimeframe(0);
+        const toDate = getDateWithTimeframe(TIMEFRAME);
         const shiftsUrl = `${process.env.TANDA_BASE_URL}/v2/schedules?from=${fromDate}&to=${toDate}`;
         const authHeader = `bearer ${authRes.data.access_token}`;
-
         const shiftsRes = await axios({
             method: 'get',
             url: shiftsUrl,
@@ -126,28 +128,28 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
         console.log('Retrieved shifts from Tanda.');
         const shifts: TandaShift[] = shiftsRes.data;
 
-        // Loop through results -> create events accordingly
+        // Loop through results -> create events accordinsgly
         let events: Event[] = [];
         await Promise.all(
             shifts.map((shift: TandaShift) => {
                 const startTime = secondsToISOString(shift.start);
                 const endTime = secondsToISOString(shift.finish);
                 events.push({
-                    'summary': 'WORK - Quest Hotel Eight Mile Plain',
-                    'location': 'Quest Hotel Eight Mile Plain',
-                    'start': {
-                        'dateTime': startTime,
-                        'timeZone': 'Australia/Brisbane',
+                    summary: 'WORK - Quest Hotel Eight Mile Plain',
+                    location: 'Quest Hotel Eight Mile Plain',
+                    start: {
+                        dateTime: startTime,
+                        timeZone: 'Australia/Brisbane',
                     },
-                    'end': {
-                        'dateTime': endTime,
-                        'timeZone': 'Australia/Brisbane',
+                    end: {
+                        dateTime: endTime,
+                        timeZone: 'Australia/Brisbane',
                     },
-                    'reminders': {
-                        'useDefault': false,
-                        'overrides': [
-                            { 'method': 'popup', 'minutes': 12 * 60 },
-                            { 'method': 'popup', 'minutes': 3 * 60 },
+                    reminders: {
+                        useDefault: false,
+                        overrides: [
+                            { method: 'popup', minutes: 12 * 60 },
+                            { method: 'popup', minutes: 3 * 60 },
                         ],
                     },
                 });
