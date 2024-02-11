@@ -51,7 +51,7 @@ interface Event {
     };
 }
 
-const TIMEFRAME = 6;
+const TIMEFRAME = 7;
 const TANDA_SCOPES = ['roster'];
 const GAPI_SCOPES = ['https://www.googleapis.com/auth/calendar', 'https://www.googleapis.com/auth/calendar.events'];
 const calendar = google.calendar('v3');
